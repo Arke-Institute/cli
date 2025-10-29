@@ -2,22 +2,18 @@
 
 ## Quick Start
 
-### Option 1: Install from GitHub (Recommended for now)
+### Option 1: Install from GitHub (Recommended)
 
 ```bash
 # Install globally from GitHub
-npm install -g github:arke-institute/cli
+npm install -g github:Arke-Institute/cli
 
 # Verify installation
 arke-upload --version
 
-# Use it!
-arke-upload upload ./my-files \
-  --worker-url https://ingest.arke.institute \
-  --uploader "Your Name"
+# Use it! (worker URL defaults to https://ingest.arke.institute)
+arke-upload upload ./my-files --uploader "Your Name"
 ```
-
-**Note:** Update the GitHub URL once the repo is set up (e.g., `github:arke-institute/arke-cli` or whatever the repo name is)
 
 ---
 
@@ -25,7 +21,7 @@ arke-upload upload ./my-files \
 
 ```bash
 # Clone the repository
-git clone https://github.com/arke-institute/cli.git
+git clone https://github.com/Arke-Institute/cli.git
 cd cli
 
 # Install dependencies and build
@@ -35,10 +31,8 @@ npm run build
 # Link globally (makes `arke-upload` available everywhere)
 npm link
 
-# Now use anywhere
-arke-upload upload ./my-files \
-  --worker-url https://ingest.arke.institute \
-  --uploader "Your Name"
+# Now use anywhere (worker URL defaults to https://ingest.arke.institute)
+arke-upload upload ./my-files --uploader "Your Name"
 ```
 
 ---
@@ -47,20 +41,16 @@ arke-upload upload ./my-files \
 
 ```bash
 # Clone and install
-git clone https://github.com/arke-institute/cli.git
+git clone https://github.com/Arke-Institute/cli.git
 cd cli
 npm install
 
 # Run with tsx (development)
-npx tsx src/index.ts upload ./my-files \
-  --worker-url https://ingest.arke.institute \
-  --uploader "Your Name"
+npx tsx src/index.ts upload ./my-files --uploader "Your Name"
 
 # Or build and run
 npm run build
-node dist/index.js upload ./my-files \
-  --worker-url https://ingest.arke.institute \
-  --uploader "Your Name"
+node dist/index.js upload ./my-files --uploader "Your Name"
 ```
 
 ---
@@ -74,9 +64,7 @@ Once published to NPM, installation will be even simpler:
 npm install -g @arke/upload-cli
 
 # Use immediately
-arke-upload upload ./my-files \
-  --worker-url https://ingest.arke.institute \
-  --uploader "Your Name"
+arke-upload upload ./my-files --uploader "Your Name"
 ```
 
 **To publish to NPM (for maintainers):**
@@ -99,7 +87,6 @@ arke-upload --help
 
 # Test with dry run
 arke-upload upload ./example_dirs/sample_archive_deep \
-  --worker-url https://ingest.arke.institute \
   --uploader "Test User" \
   --dry-run
 ```
@@ -148,14 +135,14 @@ npm config get prefix
 
 **Solution 2:** Use npx instead
 ```bash
-npx arke-upload upload ./my-files --worker-url https://ingest.arke.institute --uploader "Me"
+npx arke-upload upload ./my-files --uploader "Me"
 ```
 
 ### Permission denied when installing globally
 
 **Solution:** Use sudo (macOS/Linux) or run terminal as administrator (Windows)
 ```bash
-sudo npm install -g github:arke-institute/cli
+sudo npm install -g github:Arke-Institute/cli
 ```
 
 Or configure npm to install globally without sudo:

@@ -48,11 +48,11 @@ That's it! Worker URL and other settings use smart defaults.
 
 ## Installation Methods
 
-### Option 1: From GitHub (Current)
+### Option 1: From GitHub (Recommended)
 
 ```bash
 # Install globally
-npm install -g github:arke-institute/cli
+npm install -g github:Arke-Institute/cli
 
 # Verify
 arke-upload --version
@@ -65,7 +65,7 @@ arke-upload upload ./files --uploader "Me"
 
 ```bash
 # Clone
-git clone https://github.com/arke-institute/cli.git
+git clone https://github.com/Arke-Institute/cli.git
 cd cli
 
 # Install & link
@@ -322,7 +322,7 @@ cat .arke-upload.json | jq .  # Should parse without errors
 
 ## Support
 
-- Issues: https://github.com/arke-institute/cli/issues
+- Issues: https://github.com/Arke-Institute/cli/issues
 - Docs: See files above
 
 ---

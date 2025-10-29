@@ -5,9 +5,15 @@ Get up and running with the Arke Upload CLI in 5 minutes.
 ## Installation
 
 ```bash
+# Install from GitHub
+npm install -g github:Arke-Institute/cli
+
+# Or clone and build from source
+git clone https://github.com/Arke-Institute/cli.git
 cd cli
 npm install
 npm run build
+npm link
 ```
 
 ## Test with Example Data
@@ -87,8 +93,8 @@ npx tsx src/index.ts upload ./example_dirs/sample_archive_deep \
 ## Upload Your Own Files
 
 ```bash
-npx tsx src/index.ts upload /path/to/your/directory \
-  --worker-url https://ingest.arke.institute \
+# Worker URL defaults to https://ingest.arke.institute
+arke-upload upload /path/to/your/directory \
   --uploader "Your Name" \
   --root-path "/collection/series/box"
 ```
@@ -96,8 +102,7 @@ npx tsx src/index.ts upload /path/to/your/directory \
 ### Optional: Add Metadata
 
 ```bash
-npx tsx src/index.ts upload /path/to/your/directory \
-  --worker-url https://ingest.arke.institute \
+arke-upload upload /path/to/your/directory \
   --uploader "Your Name" \
   --root-path "/collection/series_1" \
   --metadata '{"collection":"historical_records","year":"1923","notes":"Fragile"}'
@@ -107,10 +112,10 @@ npx tsx src/index.ts upload /path/to/your/directory \
 
 ### Required
 - `<directory>` - Directory to upload
-- `--worker-url <url>` - Worker API URL
-- `--uploader <name>` - Your name
+- `--uploader <name>` - Your name (or set in config file / `ARKE_UPLOADER` env var)
 
 ### Optional
+- `--worker-url <url>` - Worker API URL (default: `https://ingest.arke.institute`)
 - `--root-path <path>` - Logical root path (default: `/`)
 - `--metadata <json>` - Batch metadata as JSON
 - `--parallel <n>` - Concurrent uploads (default: 5)

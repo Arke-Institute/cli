@@ -14,24 +14,64 @@ Command-line tool for uploading files to the Arke Institute's ingest service.
 
 ## Installation
 
+### Install from GitHub (Recommended)
+
 ```bash
-npm install
-npm run build
+# Install globally from GitHub
+npm install -g github:Arke-Institute/cli
+
+# Verify installation
+arke-upload --version
 ```
 
-Or link globally:
+### Install from Source
 
 ```bash
+# Clone the repository
+git clone https://github.com/Arke-Institute/cli.git
+cd cli
+
+# Install dependencies and build
+npm install
+npm run build
+
+# Link globally
 npm link
 ```
 
 ## Usage
 
+### Quick Start (Minimal)
+
+Worker URL defaults to `https://ingest.arke.institute`, so you only need to specify the uploader:
+
+```bash
+arke-upload upload ./my-files --uploader "Jane Doe"
+```
+
+### With Config File (Recommended)
+
+Create `.arke-upload.json` in your project:
+
+```json
+{
+  "uploader": "Jane Doe",
+  "rootPath": "/series_1/box_7"
+}
+```
+
+Then simply run:
+
+```bash
+arke-upload upload ./my-files
+```
+
+See [CONFIG.md](CONFIG.md) for full configuration options.
+
 ### Basic Upload
 
 ```bash
 arke-upload upload <directory> \
-  --worker-url https://ingest.arke.institute \
   --uploader "Jane Doe" \
   --root-path "/series_1/box_7"
 ```
@@ -40,7 +80,6 @@ arke-upload upload <directory> \
 
 ```bash
 arke-upload upload ./my-files \
-  --worker-url https://ingest.arke.institute \
   --uploader "Jane Doe" \
   --root-path "/collection/series_1" \
   --metadata '{"collection":"historical_records","year":"1923"}'
@@ -50,7 +89,6 @@ arke-upload upload ./my-files \
 
 ```bash
 arke-upload upload ./my-files \
-  --worker-url https://ingest.arke.institute \
   --uploader "Jane Doe" \
   --allowed-extensions .tiff .jpg .json
 ```
@@ -59,7 +97,6 @@ arke-upload upload ./my-files \
 
 ```bash
 arke-upload upload ./my-files \
-  --worker-url https://ingest.arke.institute \
   --uploader "Test User" \
   --dry-run
 ```
@@ -68,7 +105,6 @@ arke-upload upload ./my-files \
 
 ```bash
 arke-upload upload ./my-files \
-  --worker-url https://ingest.arke.institute \
   --uploader "Jane Doe" \
   --debug \
   --log-file upload.log
@@ -79,11 +115,11 @@ arke-upload upload ./my-files \
 ### Required Options
 
 - `<directory>` - Directory to upload
-- `--worker-url <url>` - Worker API URL (e.g., `https://ingest.arke.institute`)
-- `--uploader <name>` - Name of person uploading
+- `--uploader <name>` - Name of person uploading (or set in config file / `ARKE_UPLOADER` env var)
 
 ### Optional Options
 
+- `--worker-url <url>` - Worker API URL (default: `https://ingest.arke.institute`)
 - `--root-path <path>` - Logical root path (default: `/`)
 - `--metadata <json>` - Batch metadata as JSON string
 - `--parallel <n>` - Number of concurrent file uploads (default: `5`)
@@ -93,6 +129,16 @@ arke-upload upload ./my-files \
 - `--resume` - Resume interrupted upload (future feature)
 - `--debug` - Enable debug logging
 - `--log-file <path>` - Write logs to file
+
+### Configuration Priority
+
+Settings are loaded in this order (highest to lowest priority):
+1. **CLI arguments** (e.g., `--uploader "Jane"`)
+2. **Environment variables** (e.g., `ARKE_UPLOADER="Jane"`)
+3. **Config file** (`.arke-upload.json`)
+4. **Defaults**
+
+See [CONFIG.md](CONFIG.md) for details.
 
 ## File Type Support
 
