@@ -1,9 +1,0 @@
-{
-  "image_file": "page_002_p_1.jpg",
-  "extracted_text": "Gentlemen -\n\nIt is interesting to examine the records of Medical Science, from the earliest period of Antiquity; and note the gradual improvements and important additions, which have been effected within its limits. In the days of Hippocrates and Galen, a knowledge of the entire cycle of the healing arts could be acquired in a very brief period; but the domain of Physic has been so much increased, during the long era of time, that separates us from those worthy pioneers, that a single lifetime is insufficient to gain a familiar acquaintance with its best resources.\n\nIn Medicine as in the other Sciences, much has been promulgated",
-  "tokens": 7185,
-  "prompt_tokens": 7057,
-  "completion_tokens": 128,
-  "model": "allenai/olmOCR-2-7B-1025",
-  "processed_at": "2025-10-28T14:42:41.751345"
-}

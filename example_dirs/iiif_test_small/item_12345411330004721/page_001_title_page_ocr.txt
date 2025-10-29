@@ -1,9 +1,0 @@
-{
-  "image_file": "page_001_title_page.jpg",
-  "extracted_text": "Gentlemen -\n\nIt is interesting to examine the records of Medicine and see from the earliest period on the use of the Obstetrical Forceps.\n\nAn Essay from the earliest period on the use of the Obstetrical Forceps, presented, in important additions to the Faculty within its limits, in the days of Hippocrates.\n\nHomeopathic Medical College of Pennsylvania, very brief period; in Philadelphia.\n\nFor the degree of Doctorate in Medicine the long by Richard Gardiner.\n\nPhiladelphia, February 1, 1850.\n\nIn Medicine as in the other sciences, much has been promulgated.",
-  "tokens": 7180,
-  "prompt_tokens": 7057,
-  "completion_tokens": 123,
-  "model": "allenai/olmOCR-2-7B-1025",
-  "processed_at": "2025-10-28T14:42:41.751055"
-}

@@ -1,9 +1,0 @@
-{
-  "image_file": "page_002_p_1.jpg",
-  "extracted_text": "Philosophy of Partition\n\nWhen ever any great work is to be accomplished, or object attained we almost invariably find, that if man be the operator, he in order, the more perfectly, to secure its completion, requires, or demands at least, some length of time, that he may spend in forethought and deep study in order that he may be the more able, and competent to fulfil the task. This may be looked upon in most cases as a truism, indeed it is in all cases to some extent, the greatest benefits that have been achieved for mankind, as well as the most marked changes, that have occurred in Human affairs, have all without exception engaged the minds of their performers, for days, months, and even years before their completion, and upon examination we find that education seems to favor this plan of procedure, from the fact that educated men, consider well, and mature their plans before daring to make",
-  "tokens": 7033,
-  "prompt_tokens": 6844,
-  "completion_tokens": 189,
-  "model": "allenai/olmOCR-2-7B-1025",
-  "processed_at": "2025-10-28T14:42:27.322133"
-}

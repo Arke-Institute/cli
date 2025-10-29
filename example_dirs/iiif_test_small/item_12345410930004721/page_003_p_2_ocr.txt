@@ -1,9 +1,0 @@
-{
-  "image_file": "page_003_p_2.jpg",
-  "extracted_text": "known these thoughts, and thus carry them into action. This wise theory which men have so generally adopted, has been learned from a lesson that nature has taught, and her teachings are the very embodiment of wisdom, beautiful in her designs, and simple in the way in which she presents them, and yet possessing wonderful attractions, for the eye of the most fastidious. But as usual whenever our conversation turns upon nature, we wonder away from the purposed subject of our remarks; and why, we find here in this wide domain of nature, beauties, that aspiring art cannot imitate, richer, unlike those of her cruel counterfeiter, that brighten but in the course time, and that fade not away, even though centuries may intervene; but before these beauties are made visible to the human eye, we find that many years, are sometimes necessary, to develop,",
-  "tokens": 7021,
-  "prompt_tokens": 6844,
-  "completion_tokens": 177,
-  "model": "allenai/olmOCR-2-7B-1025",
-  "processed_at": "2025-10-28T14:42:27.322810"
-}
