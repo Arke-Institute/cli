@@ -1,0 +1,22 @@
+node_modules/
+dist/
+*.log
+.DS_Store
+.env
+.arke-upload-state.json
+.arke-upload.json
+*.tsbuildinfo
+
+# Test files
+test-upload.log
+TEST_RESULTS.md
+FINAL_TEST_RESULTS.md
+DURABLE_OBJECTS_SUCCESS.md
+
+# Planning/scratch files
+plan.md
+2025-*.txt
+IMPLEMENTATION.md
+
+# Temporary test directories
+/tmp/

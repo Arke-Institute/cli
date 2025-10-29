@@ -1,0 +1,17 @@
+{
+  "path": "tests/fixtures/iiif_test_small/item_12345411330004721",
+  "title": "An Essay on the Use of the Obstetrical Forceps",
+  "summary": "This handwritten thesis, written by **Richard Gardiner**, was submitted to the **Homeopathic Medical College of Pennsylvania** in **Philadelphia** on **February 1, 1850** as part of the requirements for the Doctorate in Medicine. The work is a brief historical survey of obstetrical forceps, tracing their use from the earliest period of antiquity through the days of Hippocrates and Galen.",
+  "depth": 1,
+  "is_leaf": true,
+  "file_count": 3,
+  "child_count": 0,
+  "images_processed": 2,
+  "ocr_files": [
+    "page_001_title_page_ocr.txt",
+    "page_002_p_1_ocr.txt"
+  ],
+  "tokens_used": 1907,
+  "cost_usd": 0.00015676,
+  "generated_at": "2025-10-28T14:42:47.605628"
+}

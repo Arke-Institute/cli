@@ -1,0 +1,14 @@
+{
+  "path": "tests/fixtures/iiif_test_small",
+  "title": "Hahnemann University Academic Affairs Records",
+  "summary": "--- The collection comprises two handwritten, bound theses submitted to the **Homeopathic Medical College of Pennsylvania** in Philadelphia as part of the requirements for the Doctor of Medicine degree. The first, *An Essay on the Use of the Obstetrical Forceps* (1850), is a concise historical survey of obstetric instruments.",
+  "depth": 0,
+  "is_leaf": false,
+  "file_count": 0,
+  "child_count": 2,
+  "images_processed": 0,
+  "ocr_files": [],
+  "tokens_used": 3572,
+  "cost_usd": 0.00028173000000000006,
+  "generated_at": "2025-10-28T14:42:56.396776"
+}
