@@ -15,6 +15,7 @@ import {
   normalizePath,
 } from './validation.js';
 import { getLogger } from '../utils/logger.js';
+import { computeFileCID } from '../utils/hash.js';
 
 export interface ScanOptions {
   /** Logical root path for the batch (e.g., /series_1/box_7) */
@@ -162,6 +163,17 @@ export async function scanDirectory(
       return;
     }
 
+    // Compute CID for the file
+    let cid: string;
+    try {
+      cid = await computeFileCID(fullPath);
+    } catch (error: any) {
+      logger.warn(`Skipping file with CID computation error: ${fullPath}`, {
+        error: error.message,
+      });
+      return;
+    }
+
     // Add to results
     files.push({
       localPath: fullPath,
@@ -169,6 +181,7 @@ export async function scanDirectory(
       fileName,
       size,
       contentType,
+      cid,
     });
 
     totalSize += size;

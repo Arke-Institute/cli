@@ -184,15 +184,13 @@ export class Uploader {
     task.startedAt = new Date();
 
     try {
-      // Small delay before each file to avoid overwhelming worker state management
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
       // Request presigned URLs from worker
       const uploadInfo = await this.client.startFileUpload(batchId, {
         file_name: task.fileName,
         file_size: task.size,
         logical_path: task.logicalPath,
         content_type: task.contentType,
+        cid: task.cid,
       });
 
       task.r2Key = uploadInfo.r2_key;

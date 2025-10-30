@@ -17,6 +17,9 @@ export interface FileInfo {
 
   /** MIME type */
   contentType: string;
+
+  /** IPFS CID v1 (base32) */
+  cid: string;
 }
 
 export interface UploadTask extends FileInfo {

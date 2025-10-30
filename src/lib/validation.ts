@@ -81,9 +81,9 @@ export function validateLogicalPath(path: string): void {
     );
   }
 
-  // No empty segments
+  // Allow "/" as root path, otherwise require at least one segment
   const segments = path.split('/').filter((s) => s.length > 0);
-  if (segments.length === 0) {
+  if (segments.length === 0 && path !== '/') {
     throw new ValidationError('Logical path cannot be empty', 'path');
   }
 
