@@ -16,6 +16,7 @@ import {
 } from './validation.js';
 import { getLogger } from '../utils/logger.js';
 import { computeFileCID } from '../utils/hash.js';
+import { ProcessingConfig, DEFAULT_PROCESSING_CONFIG } from '../types/processing.js';
 
 export interface ScanOptions {
   /** Logical root path for the batch (e.g., /series_1/box_7) */
@@ -26,6 +27,9 @@ export interface ScanOptions {
 
   /** Follow symbolic links */
   followSymlinks?: boolean;
+
+  /** Default processing configuration (from global config) */
+  defaultProcessingConfig?: ProcessingConfig;
 }
 
 /**
@@ -59,10 +63,52 @@ export async function scanDirectory(
 
   logger.info(`Scanning directory: ${dirPath}`);
 
+  // Use default processing config or fallback to global default
+  const globalProcessingConfig = options.defaultProcessingConfig || DEFAULT_PROCESSING_CONFIG;
+
+  /**
+   * Load processing config from a directory's .arke-process.json file
+   */
+  async function loadDirectoryProcessingConfig(
+    dirPath: string
+  ): Promise<ProcessingConfig | null> {
+    const configPath = path.join(dirPath, '.arke-process.json');
+    try {
+      const content = await fs.readFile(configPath, 'utf-8');
+      const parsed = JSON.parse(content);
+      logger.debug(`Loaded processing config from: ${configPath}`, { config: parsed });
+      return parsed;
+    } catch (error: any) {
+      if (error.code !== 'ENOENT') {
+        logger.warn(`Error reading processing config ${configPath}: ${error.message}`);
+      }
+      return null;
+    }
+  }
+
+  /**
+   * Merge directory-specific config with global defaults
+   */
+  function mergeProcessingConfig(
+    defaults: ProcessingConfig,
+    override: Partial<ProcessingConfig> | null
+  ): ProcessingConfig {
+    if (!override) {
+      return defaults;
+    }
+    return {
+      ocr: override.ocr ?? defaults.ocr,
+      describe: override.describe ?? defaults.describe,
+    };
+  }
+
   /**
    * Recursive walker function
    */
   async function walk(currentPath: string, relativePath: string = ''): Promise<void> {
+    // Check for directory-specific processing config
+    const dirConfigOverride = await loadDirectoryProcessingConfig(currentPath);
+    const currentProcessingConfig = mergeProcessingConfig(globalProcessingConfig, dirConfigOverride);
     let entries;
     try {
       entries = await fs.readdir(currentPath, { withFileTypes: true });
@@ -88,7 +134,7 @@ export async function scanDirectory(
           if (stats.isDirectory()) {
             await walk(fullPath, relPath);
           } else if (stats.isFile()) {
-            await processFile(fullPath, relPath, stats.size);
+            await processFile(fullPath, relPath, stats.size, currentProcessingConfig);
           }
           continue;
         }
@@ -102,7 +148,7 @@ export async function scanDirectory(
         // Handle regular files
         if (entry.isFile()) {
           const stats = await fs.stat(fullPath);
-          await processFile(fullPath, relPath, stats.size);
+          await processFile(fullPath, relPath, stats.size, currentProcessingConfig);
         }
       } catch (error: any) {
         logger.warn(`Error processing ${fullPath}: ${error.message}`);
@@ -117,9 +163,16 @@ export async function scanDirectory(
   async function processFile(
     fullPath: string,
     relativePath: string,
-    size: number
+    size: number,
+    processingConfig: ProcessingConfig
   ): Promise<void> {
     const fileName = path.basename(fullPath);
+
+    // Skip processing config files
+    if (fileName === '.arke-process.json') {
+      logger.debug(`Skipping processing config file: ${fullPath}`);
+      return;
+    }
 
     // Check extension filter
     if (!validateFileExtension(fileName, options.allowedExtensions)) {
@@ -182,6 +235,7 @@ export async function scanDirectory(
       size,
       contentType,
       cid,
+      processingConfig,
     });
 
     totalSize += size;

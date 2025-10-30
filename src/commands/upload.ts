@@ -124,6 +124,7 @@ async function handleUpload(directory: string, options: any): Promise<void> {
     parallelUploads,
     parallelParts,
     allowedExtensions,
+    processing: config.processing,
     debug: options.debug,
     dryRun: options.dryRun,
     resume: options.resume,

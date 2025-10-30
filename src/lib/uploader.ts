@@ -69,6 +69,7 @@ export class Uploader {
       const scanResult = await scanDirectory(this.config.directory, {
         rootPath: this.config.rootPath,
         allowedExtensions: this.config.allowedExtensions,
+        defaultProcessingConfig: this.config.processing,
       });
 
       spinner.succeed(
@@ -191,6 +192,7 @@ export class Uploader {
         logical_path: task.logicalPath,
         content_type: task.contentType,
         cid: task.cid,
+        processing_config: task.processingConfig,
       });
 
       task.r2Key = uploadInfo.r2_key;

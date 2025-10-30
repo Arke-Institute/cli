@@ -27,6 +27,10 @@ Create a `.arke-upload.json` file in your project directory or home directory:
   "metadata": {
     "collection": "historical_records",
     "year": "1923"
+  },
+  "processing": {
+    "ocr": true,
+    "describe": true
   }
 }
 ```
@@ -70,6 +74,7 @@ export ARKE_PARALLEL=5
 export ARKE_PARALLEL_PARTS=3
 export ARKE_ALLOWED_EXTENSIONS=".tiff,.jpg,.json"
 export ARKE_METADATA='{"collection":"historical","year":"1923"}'
+export ARKE_PROCESSING='{"ocr":true,"describe":true}'
 
 # Now upload
 arke-upload upload ./my-files
@@ -122,6 +127,98 @@ Only `uploader` is required (must be set via CLI, env, or config file):
 | Parallel parts | `--parallel-parts` | `ARKE_PARALLEL_PARTS` | `parallelParts` | `3` |
 | Allowed extensions | `--allowed-extensions` | `ARKE_ALLOWED_EXTENSIONS` | `allowedExtensions` | *(all supported)* |
 | Metadata | `--metadata` | `ARKE_METADATA` | `metadata` | *(none)* |
+| Processing config | *(none)* | `ARKE_PROCESSING` | `processing` | `{"ocr":true,"describe":true}` |
+
+---
+
+## Processing Configuration
+
+The CLI supports configuration for post-upload processing stages including OCR (Optical Character Recognition) and description/summary generation. These settings can be configured globally and overridden per-directory.
+
+### Global Processing Defaults
+
+Set default processing behavior for all files in `.arke-upload.json`:
+
+```json
+{
+  "processing": {
+    "ocr": true,
+    "describe": true
+  }
+}
+```
+
+**Default values** (if not specified):
+- `ocr`: `true` - Run OCR on eligible files
+- `describe`: `true` - Generate descriptions and summaries
+
+### Directory-Level Overrides
+
+Create a `.arke-process.json` file in any directory to override processing settings for files in that directory:
+
+**Example structure:**
+```
+/archive/
+  .arke-upload.json          # Global: ocr=true, describe=true
+  photos/
+    .arke-process.json       # Override: ocr=false
+    img001.jpg               # Will use: ocr=false, describe=true
+    img002.jpg               # Will use: ocr=false, describe=true
+  documents/
+    .arke-process.json       # Override: describe=false
+    page01.pdf               # Will use: ocr=true, describe=false
+  mixed/
+    # No .arke-process.json
+    file.txt                 # Will use: ocr=true, describe=true (global defaults)
+```
+
+**`.arke-process.json` format:**
+```json
+{
+  "ocr": false,
+  "describe": true
+}
+```
+
+You only need to specify the fields you want to override. Unspecified fields inherit from the global defaults.
+
+### How It Works
+
+1. **Global defaults** are set in `.arke-upload.json` (or use built-in defaults)
+2. **Directory overrides** are checked when scanning each directory
+3. Each file gets the **merged configuration** (directory overrides + global defaults)
+4. The configuration is sent to the worker with each file
+
+### Processing Options
+
+| Option | Type | Description | Default |
+|--------|------|-------------|---------|
+| `ocr` | boolean | Run OCR on eligible files (images, PDFs) | `true` |
+| `describe` | boolean | Generate AI descriptions and summaries | `true` |
+
+### Use Cases
+
+**Skip OCR for photos:**
+```json
+{
+  "ocr": false
+}
+```
+
+**Skip descriptions for raw data:**
+```json
+{
+  "describe": false
+}
+```
+
+**Process nothing (upload only):**
+```json
+{
+  "ocr": false,
+  "describe": false
+}
+```
 
 ---
 

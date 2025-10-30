@@ -1,0 +1,9 @@
+{
+  "workerUrl": "http://localhost:8787",
+  "uploader": "Test User",
+  "rootPath": "/test-archive",
+  "processing": {
+    "ocr": true,
+    "describe": true
+  }
+}

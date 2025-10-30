@@ -6,6 +6,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import { getLogger } from '../utils/logger.js';
+import { ProcessingConfig } from '../types/processing.js';
 
 export interface ConfigFile {
   workerUrl?: string;
@@ -15,6 +16,7 @@ export interface ConfigFile {
   parallelParts?: number;
   allowedExtensions?: string[];
   metadata?: Record<string, any>;
+  processing?: ProcessingConfig;
 }
 
 const CONFIG_FILE_NAMES = [
@@ -53,6 +55,7 @@ export async function loadConfig(cliOptions: any): Promise<ConfigFile> {
       : (envConfig.parallelParts || fileConfig.parallelParts || parseInt(cliOptions.parallelParts || '3', 10)),
     allowedExtensions: cliOptions.allowedExtensions || envConfig.allowedExtensions || fileConfig.allowedExtensions,
     metadata: cliOptions.metadata || envConfig.metadata || fileConfig.metadata,
+    processing: envConfig.processing || fileConfig.processing,
   };
 
   logger.debug('Configuration loaded', { config });
@@ -123,6 +126,14 @@ function loadEnvConfig(): ConfigFile {
   if (process.env.ARKE_METADATA) {
     try {
       config.metadata = JSON.parse(process.env.ARKE_METADATA);
+    } catch (error) {
+      // Ignore invalid JSON
+    }
+  }
+
+  if (process.env.ARKE_PROCESSING) {
+    try {
+      config.processing = JSON.parse(process.env.ARKE_PROCESSING);
     } catch (error) {
       // Ignore invalid JSON
     }

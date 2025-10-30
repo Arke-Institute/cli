@@ -2,6 +2,8 @@
  * File metadata and upload tracking types
  */
 
+import { ProcessingConfig } from './processing.js';
+
 export interface FileInfo {
   /** Absolute path on local filesystem */
   localPath: string;
@@ -20,6 +22,9 @@ export interface FileInfo {
 
   /** IPFS CID v1 (base32) */
   cid: string;
+
+  /** Processing configuration for this file */
+  processingConfig: ProcessingConfig;
 }
 
 export interface UploadTask extends FileInfo {

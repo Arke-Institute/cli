@@ -77,9 +77,24 @@ POST /api/batches/:batchId/files/start
   "file_name": "page_004.tiff",
   "file_size": 25000000,
   "logical_path": "/series_1/box_7/folder_3/page_004.tiff",
-  "content_type": "image/tiff"
+  "content_type": "image/tiff",
+  "cid": "bafkreihfdbdnabuqdtsf3tcqnpmf4omsht2gaiugyjaioryhefcs3yruk4",
+  "processing_config": {
+    "ocr": true,
+    "describe": true
+  }
 }
 ```
+
+**Fields:**
+- `file_name` (string, required) - File name only
+- `file_size` (number, required) - File size in bytes
+- `logical_path` (string, required) - Full logical path in archive
+- `content_type` (string, required) - MIME type
+- `cid` (string, required) - IPFS CIDv1 (base32) content identifier
+- `processing_config` (object, required) - Processing configuration:
+  - `ocr` (boolean) - Run OCR on this file
+  - `describe` (boolean) - Generate AI descriptions/summaries
 
 **Response (200) - Simple Upload (<5MB):**
 
@@ -278,7 +293,12 @@ When a batch is finalized, this message is sent to `BATCH_QUEUE`:
       "r2_key": "staging/01K8.../series_1/box_7/page_001.tiff",
       "logical_path": "/series_1/box_7/page_001.tiff",
       "file_name": "page_001.tiff",
-      "file_size": 25000000
+      "file_size": 25000000,
+      "cid": "bafkreihfdbdnabuqdtsf3tcqnpmf4omsht2gaiugyjaioryhefcs3yruk4",
+      "processing_config": {
+        "ocr": true,
+        "describe": true
+      }
     }
   ]
 }

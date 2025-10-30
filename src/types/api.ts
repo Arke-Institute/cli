@@ -3,6 +3,8 @@
  * @see API.md for full specification
  */
 
+import { ProcessingConfig } from './processing.js';
+
 // ============================================================================
 // Request Types
 // ============================================================================
@@ -21,6 +23,7 @@ export interface StartFileUploadRequest {
   logical_path: string;
   content_type: string;
   cid: string;
+  processing_config: ProcessingConfig;
 }
 
 export interface CompleteFileUploadRequest {

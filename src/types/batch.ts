@@ -3,6 +3,7 @@
  */
 
 import { UploadTask } from './file.js';
+import { ProcessingConfig } from './processing.js';
 
 export interface BatchContext {
   /** Batch ID from worker */
@@ -60,6 +61,9 @@ export interface UploadConfig {
 
   /** Allowed file extensions (e.g., ['.tiff', '.jpg']) */
   allowedExtensions?: string[];
+
+  /** Default processing configuration */
+  processing?: ProcessingConfig;
 
   /** Enable debug logging */
   debug: boolean;
