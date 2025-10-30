@@ -2,6 +2,7 @@
   "workerUrl": "https://ingest.arke.institute",
   "uploader": "Your Name",
   "rootPath": "/",
+  "parentPi": "00000000000000000000000000",
   "parallel": 5,
   "parallelParts": 3,
   "allowedExtensions": [".tiff", ".jpg", ".json", ".txt", ".md"],

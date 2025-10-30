@@ -12,6 +12,7 @@ export interface ConfigFile {
   workerUrl?: string;
   uploader?: string;
   rootPath?: string;
+  parentPi?: string;
   parallel?: number;
   parallelParts?: number;
   allowedExtensions?: string[];
@@ -46,6 +47,10 @@ export async function loadConfig(cliOptions: any): Promise<ConfigFile> {
     rootPath: (cliOptions.rootPath && cliOptions.rootPath !== '/')
       ? cliOptions.rootPath
       : (envConfig.rootPath || fileConfig.rootPath || cliOptions.rootPath || '/'),
+    // For parentPi, check if it's the default (26 zeros) - if so, prefer config/env
+    parentPi: (cliOptions.parentPi && cliOptions.parentPi !== '00000000000000000000000000')
+      ? cliOptions.parentPi
+      : (envConfig.parentPi || fileConfig.parentPi || cliOptions.parentPi || '00000000000000000000000000'),
     // For parallel, check if it's the default '5' - if so, prefer config/env
     parallel: (cliOptions.parallel && cliOptions.parallel !== '5')
       ? parseInt(cliOptions.parallel, 10)
@@ -109,6 +114,10 @@ function loadEnvConfig(): ConfigFile {
 
   if (process.env.ARKE_ROOT_PATH) {
     config.rootPath = process.env.ARKE_ROOT_PATH;
+  }
+
+  if (process.env.ARKE_PARENT_PI) {
+    config.parentPi = process.env.ARKE_PARENT_PI;
   }
 
   if (process.env.ARKE_PARALLEL) {

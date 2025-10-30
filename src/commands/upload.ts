@@ -14,6 +14,7 @@ import {
   validateUploader,
   validateMetadata,
   validateLogicalPath,
+  validateParentPi,
 } from '../lib/validation.js';
 import { ValidationError } from '../utils/errors.js';
 import chalk from 'chalk';
@@ -27,6 +28,7 @@ export function createUploadCommand(): Command {
     .option('--worker-url <url>', 'Worker API URL (default: https://ingest.arke.institute)')
     .option('--uploader <name>', 'Name of person uploading (required if not in config/env)')
     .option('--root-path <path>', 'Logical root path', '/')
+    .option('--parent-pi <pi>', 'Parent PI to attach collection to (default: origin block)', '00000000000000000000000000')
     .option('--metadata <json>', 'Batch metadata as JSON string')
     .option('--parallel <n>', 'Concurrent file uploads', '5')
     .option('--parallel-parts <n>', 'Concurrent parts per multipart upload', '3')
@@ -71,6 +73,7 @@ async function handleUpload(directory: string, options: any): Promise<void> {
   }
   validateUploader(config.uploader);
   validateLogicalPath(config.rootPath!);
+  validateParentPi(config.parentPi!);
 
   // Parse metadata if provided
   let metadata: Record<string, any> | undefined = config.metadata;
@@ -119,6 +122,7 @@ async function handleUpload(directory: string, options: any): Promise<void> {
     workerUrl: config.workerUrl!,
     uploader: config.uploader!,
     rootPath: config.rootPath!,
+    parentPi: config.parentPi!,
     directory: dirPath,
     metadata,
     parallelUploads,
@@ -136,6 +140,7 @@ async function handleUpload(directory: string, options: any): Promise<void> {
   console.log(chalk.gray(`Directory: ${dirPath}`));
   console.log(chalk.gray(`Worker URL: ${uploadConfig.workerUrl}`));
   console.log(chalk.gray(`Root Path: ${uploadConfig.rootPath}`));
+  console.log(chalk.gray(`Parent PI: ${uploadConfig.parentPi}`));
   console.log(chalk.gray(`Uploader: ${uploadConfig.uploader}`));
   console.log(chalk.gray(`Parallel Uploads: ${uploadConfig.parallelUploads}`));
   if (uploadConfig.allowedExtensions) {

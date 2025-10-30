@@ -96,6 +96,7 @@ export class Uploader {
       const response = await this.client.initBatch({
         uploader: this.config.uploader,
         root_path: this.config.rootPath,
+        parent_pi: this.config.parentPi,
         file_count: files.length,
         total_size: totalSize,
         metadata: this.config.metadata,
@@ -118,6 +119,7 @@ export class Uploader {
         workerUrl: this.config.workerUrl,
         uploader: this.config.uploader,
         rootPath: this.config.rootPath,
+        parentPi: this.config.parentPi,
         metadata: this.config.metadata,
         tasks,
         totalSize,

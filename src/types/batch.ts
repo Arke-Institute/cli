@@ -21,6 +21,9 @@ export interface BatchContext {
   /** Logical root path */
   rootPath: string;
 
+  /** Parent PI to attach collection to */
+  parentPi: string;
+
   /** Optional metadata */
   metadata?: Record<string, any>;
 
@@ -46,6 +49,9 @@ export interface UploadConfig {
 
   /** Logical root path for files */
   rootPath: string;
+
+  /** Parent PI to attach collection to (defaults to origin block) */
+  parentPi: string;
 
   /** Directory to scan and upload */
   directory: string;

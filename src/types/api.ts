@@ -12,6 +12,7 @@ import { ProcessingConfig } from './processing.js';
 export interface InitBatchRequest {
   uploader: string;
   root_path: string;
+  parent_pi: string;
   file_count: number;
   total_size: number;
   metadata?: Record<string, any>;

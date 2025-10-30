@@ -122,6 +122,28 @@ export function validateUploader(uploader: string): void {
 }
 
 /**
+ * Validate parent PI format
+ * Note: Existence validation happens at worker level
+ */
+export function validateParentPi(pi: string): void {
+  // PI must be exactly 26 characters (ULID format)
+  if (pi.length !== 26) {
+    throw new ValidationError(
+      'parent_pi must be exactly 26 characters',
+      'parent_pi'
+    );
+  }
+
+  // PI must be alphanumeric (case-insensitive)
+  if (!/^[0-9A-Z]{26}$/i.test(pi)) {
+    throw new ValidationError(
+      'parent_pi must contain only alphanumeric characters (0-9, A-Z)',
+      'parent_pi'
+    );
+  }
+}
+
+/**
  * Validate metadata JSON
  */
 export function validateMetadata(metadata: string): Record<string, any> {
