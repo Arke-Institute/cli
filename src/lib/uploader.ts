@@ -260,12 +260,8 @@ export class Uploader {
     try {
       const result = await this.client.finalizeBatch(context.batchId);
 
-      spinner.succeed(
-        `Batch finalized: ${result.files_uploaded} files enqueued for processing`
-      );
-
+      spinner.succeed(`${result.files_uploaded} files enqueued`);
       console.log(chalk.gray(`Batch ID: ${result.batch_id}`));
-      console.log(chalk.gray(`R2 Prefix: ${result.r2_prefix}`));
     } catch (error) {
       spinner.fail('Batch finalization failed');
       throw error;
