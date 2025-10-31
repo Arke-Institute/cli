@@ -19,6 +19,13 @@ const MAX_BATCH_SIZE = 100 * 1024 * 1024 * 1024; // 100 GB
 // Invalid path characters
 const INVALID_PATH_CHARS = /[<>:"|?*\x00-\x1f]/;
 
+// Supported image content types for .image-ref.json files
+const SUPPORTED_IMAGE_REF_CONTENT_TYPES = [
+  'image/jpeg',
+  'image/png',
+  'image/webp',
+];
+
 /**
  * Validate a file extension
  */
@@ -155,6 +162,100 @@ export function validateMetadata(metadata: string): Record<string, any> {
     return parsed;
   } catch (error: any) {
     throw new ValidationError(`Invalid metadata JSON: ${error.message}`, 'metadata');
+  }
+}
+
+/**
+ * Validate .image-ref.json file content
+ *
+ * Required fields:
+ * - url: Publicly accessible HTTP(S) URL to the image
+ *
+ * Optional fields (validated if present):
+ * - content_type: MIME type (must be one of the supported types if provided)
+ * - size_bytes: File size in bytes (must be positive number if provided)
+ * - original_name: Original filename for display
+ *
+ * Note: Additional fields (e.g., ocr, description, tags) are allowed and will be
+ * passed through to the worker without validation.
+ */
+export function validateImageRefJson(content: string, fileName: string): void {
+  let parsed: any;
+
+  // Parse JSON
+  try {
+    parsed = JSON.parse(content);
+  } catch (error: any) {
+    throw new ValidationError(
+      `Invalid JSON in ${fileName}: ${error.message}`,
+      'imageRef'
+    );
+  }
+
+  // Must be an object
+  if (typeof parsed !== 'object' || Array.isArray(parsed) || parsed === null) {
+    throw new ValidationError(
+      `${fileName} must contain a JSON object`,
+      'imageRef'
+    );
+  }
+
+  // Required field: url
+  if (!parsed.url || typeof parsed.url !== 'string') {
+    throw new ValidationError(
+      `${fileName} must contain a 'url' field with a string value`,
+      'imageRef'
+    );
+  }
+
+  // Validate URL format
+  try {
+    const url = new URL(parsed.url);
+    if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+      throw new Error('URL must use HTTP or HTTPS protocol');
+    }
+  } catch (error: any) {
+    throw new ValidationError(
+      `Invalid URL in ${fileName}: ${error.message}`,
+      'imageRef'
+    );
+  }
+
+  // Optional field: content_type
+  if (parsed.content_type !== undefined) {
+    if (typeof parsed.content_type !== 'string') {
+      throw new ValidationError(
+        `${fileName}: content_type must be a string`,
+        'imageRef'
+      );
+    }
+
+    if (!SUPPORTED_IMAGE_REF_CONTENT_TYPES.includes(parsed.content_type)) {
+      throw new ValidationError(
+        `${fileName}: content_type '${parsed.content_type}' is not supported. Supported types: ${SUPPORTED_IMAGE_REF_CONTENT_TYPES.join(', ')}`,
+        'imageRef'
+      );
+    }
+  }
+
+  // Optional field: size_bytes
+  if (parsed.size_bytes !== undefined) {
+    if (typeof parsed.size_bytes !== 'number' || parsed.size_bytes <= 0) {
+      throw new ValidationError(
+        `${fileName}: size_bytes must be a positive number`,
+        'imageRef'
+      );
+    }
+  }
+
+  // Optional field: original_name
+  if (parsed.original_name !== undefined) {
+    if (typeof parsed.original_name !== 'string') {
+      throw new ValidationError(
+        `${fileName}: original_name must be a string`,
+        'imageRef'
+      );
+    }
   }
 }
 

@@ -13,6 +13,7 @@ import {
   validateBatchSize,
   validateLogicalPath,
   normalizePath,
+  validateImageRefJson,
 } from './validation.js';
 import { getLogger } from '../utils/logger.js';
 import { computeFileCID } from '../utils/hash.js';
@@ -99,6 +100,7 @@ export async function scanDirectory(
     return {
       ocr: override.ocr ?? defaults.ocr,
       describe: override.describe ?? defaults.describe,
+      pinax: override.pinax ?? defaults.pinax,
     };
   }
 
@@ -178,6 +180,20 @@ export async function scanDirectory(
     if (!validateFileExtension(fileName, options.allowedExtensions)) {
       logger.debug(`Skipping file with invalid extension: ${fileName}`);
       return;
+    }
+
+    // Validate .image-ref.json files
+    if (fileName.endsWith('.image-ref.json')) {
+      try {
+        const content = await fs.readFile(fullPath, 'utf-8');
+        validateImageRefJson(content, fileName);
+        logger.debug(`Validated .image-ref.json file: ${fileName}`);
+      } catch (error: any) {
+        logger.warn(`Skipping invalid .image-ref.json file: ${fileName}`, {
+          error: error.message,
+        });
+        return;
+      }
     }
 
     // Validate file size

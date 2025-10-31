@@ -6,7 +6,7 @@ import fs from 'fs/promises';
 import path from 'path';
 import os from 'os';
 import { getLogger } from '../utils/logger.js';
-import { ProcessingConfig } from '../types/processing.js';
+import { ProcessingConfig, DEFAULT_PROCESSING_CONFIG } from '../types/processing.js';
 
 export interface ConfigFile {
   workerUrl?: string;
@@ -40,6 +40,12 @@ export async function loadConfig(cliOptions: any): Promise<ConfigFile> {
 
   // 3. Merge with CLI options (CLI has highest priority)
   // Note: Commander sets default values, so we check if they were explicitly provided
+
+  // Merge processing config with defaults to ensure all fields are present
+  const processingConfig = mergeWithDefaults(
+    envConfig.processing || fileConfig.processing
+  );
+
   const config: ConfigFile = {
     workerUrl: cliOptions.workerUrl || envConfig.workerUrl || fileConfig.workerUrl || 'https://ingest.arke.institute',
     uploader: cliOptions.uploader || envConfig.uploader || fileConfig.uploader,
@@ -60,12 +66,26 @@ export async function loadConfig(cliOptions: any): Promise<ConfigFile> {
       : (envConfig.parallelParts || fileConfig.parallelParts || parseInt(cliOptions.parallelParts || '3', 10)),
     allowedExtensions: cliOptions.allowedExtensions || envConfig.allowedExtensions || fileConfig.allowedExtensions,
     metadata: cliOptions.metadata || envConfig.metadata || fileConfig.metadata,
-    processing: envConfig.processing || fileConfig.processing,
+    processing: processingConfig,
   };
 
   logger.debug('Configuration loaded', { config });
 
   return config;
+}
+
+/**
+ * Merge partial processing config with defaults
+ */
+function mergeWithDefaults(partial?: Partial<ProcessingConfig>): ProcessingConfig {
+  if (!partial) {
+    return DEFAULT_PROCESSING_CONFIG;
+  }
+  return {
+    ocr: partial.ocr ?? DEFAULT_PROCESSING_CONFIG.ocr,
+    describe: partial.describe ?? DEFAULT_PROCESSING_CONFIG.describe,
+    pinax: partial.pinax ?? DEFAULT_PROCESSING_CONFIG.pinax,
+  };
 }
 
 /**

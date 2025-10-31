@@ -11,6 +11,9 @@ export interface ProcessingConfig {
 
   /** Enable description/summary generation */
   describe: boolean;
+
+  /** Enable pinax metadata generation */
+  pinax: boolean;
 }
 
 /**
@@ -19,4 +22,5 @@ export interface ProcessingConfig {
 export const DEFAULT_PROCESSING_CONFIG: ProcessingConfig = {
   ocr: true,
   describe: true,
+  pinax: true,
 };
