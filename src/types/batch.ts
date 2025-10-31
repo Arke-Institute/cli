@@ -4,6 +4,7 @@
 
 import { UploadTask } from './file.js';
 import { ProcessingConfig } from './processing.js';
+import { PreprocessorConfig } from './preprocessor.js';
 
 export interface BatchContext {
   /** Batch ID from worker */
@@ -67,6 +68,9 @@ export interface UploadConfig {
 
   /** Default processing configuration */
   processing?: ProcessingConfig;
+
+  /** Preprocessor configuration */
+  preprocessor?: PreprocessorConfig;
 
   /** Enable debug logging */
   debug: boolean;

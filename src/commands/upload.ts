@@ -32,6 +32,9 @@ export function createUploadCommand(): Command {
     .option('--metadata <json>', 'Batch metadata as JSON string')
     .option('--parallel <n>', 'Concurrent file uploads', '5')
     .option('--parallel-parts <n>', 'Concurrent parts per multipart upload', '3')
+    .option('--convert-tiff <mode>', 'TIFF conversion mode: convert, preserve, both, or none', 'convert')
+    .option('--tiff-quality <n>', 'JPEG quality for TIFF conversion (1-100)', '95')
+    .option('--preprocess-dir <path>', 'Directory for preprocessed files (temp by default)')
     .option('--dry-run', 'Scan files but do not upload', false)
     .option('--resume', 'Resume interrupted upload', false)
     .option('--debug', 'Enable debug logging', false)
@@ -116,6 +119,7 @@ async function handleUpload(directory: string, options: any): Promise<void> {
     parallelUploads,
     parallelParts,
     processing: config.processing,
+    preprocessor: config.preprocessor,
     debug: options.debug,
     dryRun: options.dryRun,
     resume: options.resume,

@@ -7,6 +7,8 @@ import path from 'path';
 import os from 'os';
 import { getLogger } from '../utils/logger.js';
 import { ProcessingConfig, DEFAULT_PROCESSING_CONFIG } from '../types/processing.js';
+import { PreprocessorConfig, DEFAULT_PREPROCESSOR_CONFIG } from '../types/preprocessor.js';
+import { validateTiffMode, validateTiffQuality } from './validation.js';
 
 export interface ConfigFile {
   workerUrl?: string;
@@ -17,6 +19,7 @@ export interface ConfigFile {
   parallelParts?: number;
   metadata?: Record<string, any>;
   processing?: ProcessingConfig;
+  preprocessor?: PreprocessorConfig;
 }
 
 const CONFIG_FILE_NAMES = [
@@ -41,8 +44,15 @@ export async function loadConfig(cliOptions: any): Promise<ConfigFile> {
   // Note: Commander sets default values, so we check if they were explicitly provided
 
   // Merge processing config with defaults to ensure all fields are present
-  const processingConfig = mergeWithDefaults(
+  const processingConfig = mergeProcessingWithDefaults(
     envConfig.processing || fileConfig.processing
+  );
+
+  // Merge preprocessor config with defaults
+  const preprocessorConfig = mergePreprocessorWithDefaults(
+    cliOptions,
+    envConfig.preprocessor,
+    fileConfig.preprocessor
   );
 
   const config: ConfigFile = {
@@ -65,6 +75,7 @@ export async function loadConfig(cliOptions: any): Promise<ConfigFile> {
       : (envConfig.parallelParts || fileConfig.parallelParts || parseInt(cliOptions.parallelParts || '3', 10)),
     metadata: cliOptions.metadata || envConfig.metadata || fileConfig.metadata,
     processing: processingConfig,
+    preprocessor: preprocessorConfig,
   };
 
   logger.debug('Configuration loaded', { config });
@@ -75,7 +86,7 @@ export async function loadConfig(cliOptions: any): Promise<ConfigFile> {
 /**
  * Merge partial processing config with defaults
  */
-function mergeWithDefaults(partial?: Partial<ProcessingConfig>): ProcessingConfig {
+function mergeProcessingWithDefaults(partial?: Partial<ProcessingConfig>): ProcessingConfig {
   if (!partial) {
     return DEFAULT_PROCESSING_CONFIG;
   }
@@ -83,6 +94,57 @@ function mergeWithDefaults(partial?: Partial<ProcessingConfig>): ProcessingConfi
     ocr: partial.ocr ?? DEFAULT_PROCESSING_CONFIG.ocr,
     describe: partial.describe ?? DEFAULT_PROCESSING_CONFIG.describe,
     pinax: partial.pinax ?? DEFAULT_PROCESSING_CONFIG.pinax,
+  };
+}
+
+/**
+ * Merge preprocessor config from CLI, env, and file (CLI has highest priority)
+ */
+function mergePreprocessorWithDefaults(
+  cliOptions: any,
+  envConfig?: Partial<PreprocessorConfig>,
+  fileConfig?: Partial<PreprocessorConfig>
+): PreprocessorConfig {
+  const logger = getLogger();
+
+  // Parse and validate TIFF mode (CLI > env > file > default)
+  let tiffMode = DEFAULT_PREPROCESSOR_CONFIG.tiffMode;
+  if (cliOptions.convertTiff && cliOptions.convertTiff !== 'convert') {
+    tiffMode = validateTiffMode(cliOptions.convertTiff);
+  } else if (envConfig?.tiffMode) {
+    tiffMode = validateTiffMode(envConfig.tiffMode);
+  } else if (fileConfig?.tiffMode) {
+    tiffMode = validateTiffMode(fileConfig.tiffMode);
+  } else if (cliOptions.convertTiff === 'convert') {
+    tiffMode = 'convert';
+  }
+
+  // Parse and validate TIFF quality (CLI > env > file > default)
+  let tiffQuality = DEFAULT_PREPROCESSOR_CONFIG.tiffQuality;
+  if (cliOptions.tiffQuality && cliOptions.tiffQuality !== '95') {
+    const parsed = parseInt(cliOptions.tiffQuality, 10);
+    validateTiffQuality(parsed);
+    tiffQuality = parsed;
+  } else if (envConfig?.tiffQuality !== undefined) {
+    validateTiffQuality(envConfig.tiffQuality);
+    tiffQuality = envConfig.tiffQuality;
+  } else if (fileConfig?.tiffQuality !== undefined) {
+    validateTiffQuality(fileConfig.tiffQuality);
+    tiffQuality = fileConfig.tiffQuality;
+  } else if (cliOptions.tiffQuality === '95') {
+    tiffQuality = 95;
+  }
+
+  // Preprocess directory (CLI > env > file > undefined)
+  const preprocessDir =
+    cliOptions.preprocessDir ||
+    envConfig?.preprocessDir ||
+    fileConfig?.preprocessDir;
+
+  return {
+    tiffMode,
+    tiffQuality,
+    preprocessDir,
   };
 }
 
@@ -160,6 +222,28 @@ function loadEnvConfig(): ConfigFile {
     } catch (error) {
       // Ignore invalid JSON
     }
+  }
+
+  // Preprocessor config
+  if (process.env.ARKE_TIFF_MODE) {
+    if (!config.preprocessor) {
+      config.preprocessor = { ...DEFAULT_PREPROCESSOR_CONFIG };
+    }
+    config.preprocessor.tiffMode = process.env.ARKE_TIFF_MODE as any;
+  }
+
+  if (process.env.ARKE_TIFF_QUALITY) {
+    if (!config.preprocessor) {
+      config.preprocessor = { ...DEFAULT_PREPROCESSOR_CONFIG };
+    }
+    config.preprocessor.tiffQuality = parseInt(process.env.ARKE_TIFF_QUALITY, 10);
+  }
+
+  if (process.env.ARKE_PREPROCESS_DIR) {
+    if (!config.preprocessor) {
+      config.preprocessor = { ...DEFAULT_PREPROCESSOR_CONFIG };
+    }
+    config.preprocessor.preprocessDir = process.env.ARKE_PREPROCESS_DIR;
   }
 
   return config;

@@ -9,6 +9,9 @@ import { scanDirectory } from './scanner.js';
 import { uploadSimple } from './simple.js';
 import { uploadMultipart } from './multipart.js';
 import { ProgressTracker } from './progress.js';
+import { PreprocessorOrchestrator } from './preprocessor.js';
+import { TiffConverter } from './preprocessors/index.js';
+import { DEFAULT_PREPROCESSOR_CONFIG } from '../types/preprocessor.js';
 import { getLogger } from '../utils/logger.js';
 import chalk from 'chalk';
 import ora from 'ora';
@@ -16,6 +19,7 @@ import ora from 'ora';
 export class Uploader {
   private config: UploadConfig;
   private client: WorkerClient;
+  private preprocessor: PreprocessorOrchestrator;
   private logger = getLogger();
 
   constructor(config: UploadConfig) {
@@ -24,6 +28,10 @@ export class Uploader {
       baseUrl: config.workerUrl,
       debug: config.debug,
     });
+
+    // Initialize preprocessor with registered converters
+    this.preprocessor = new PreprocessorOrchestrator();
+    this.preprocessor.register(new TiffConverter());
   }
 
   /**
@@ -34,27 +42,40 @@ export class Uploader {
       // Step 1: Scan directory
       const scanResult = await this.scanFiles();
 
+      // Step 2: Preprocess files (conversion, etc.)
+      const preprocessedFiles = await this.preprocessFiles(scanResult.files);
+
       if (this.config.dryRun) {
-        this.printDryRunSummary(scanResult.totalFiles, scanResult.totalSize);
+        // Calculate total size after preprocessing simulation
+        const totalSize = preprocessedFiles.reduce((sum, f) => sum + f.size, 0);
+        this.printDryRunSummary(preprocessedFiles.length, totalSize);
         return;
       }
 
-      // Step 2: Initialize batch
+      // Step 3: Initialize batch
+      const totalSize = preprocessedFiles.reduce((sum, f) => sum + f.size, 0);
       const batchContext = await this.initializeBatch(
-        scanResult.files,
-        scanResult.totalSize
+        preprocessedFiles,
+        totalSize
       );
 
-      // Step 3: Upload files
+      // Step 4: Upload files
       await this.uploadFiles(batchContext);
 
-      // Step 4: Finalize batch
+      // Step 5: Finalize batch
       await this.finalizeBatch(batchContext);
+
+      // Step 6: Cleanup preprocessor temp files
+      await this.preprocessor.cleanup();
 
       console.log(chalk.green.bold('\n✓ Upload complete!'));
     } catch (error: any) {
       this.logger.error('Upload failed', { error: error.message });
       console.log(chalk.red.bold('\n✗ Upload failed: ' + error.message));
+
+      // Ensure cleanup happens on error
+      await this.preprocessor.cleanup();
+
       throw error;
     }
   }
@@ -83,7 +104,29 @@ export class Uploader {
   }
 
   /**
-   * Step 2: Initialize batch with worker
+   * Step 2: Preprocess files (convert TIFFs, etc.)
+   */
+  private async preprocessFiles(files: any[]) {
+    const preprocessorConfig = this.config.preprocessor || DEFAULT_PREPROCESSOR_CONFIG;
+
+    this.logger.debug('Preprocessing with config:', preprocessorConfig);
+
+    try {
+      const processedFiles = await this.preprocessor.run(
+        files,
+        preprocessorConfig,
+        this.config.dryRun
+      );
+
+      return processedFiles;
+    } catch (error) {
+      this.logger.error('Preprocessing failed', { error });
+      throw error;
+    }
+  }
+
+  /**
+   * Step 3: Initialize batch with worker
    */
   private async initializeBatch(
     files: any[],
@@ -131,7 +174,7 @@ export class Uploader {
   }
 
   /**
-   * Step 3: Upload all files with concurrency control
+   * Step 4: Upload all files with concurrency control
    */
   private async uploadFiles(context: BatchContext): Promise<void> {
     const progress = new ProgressTracker(context.tasks.length, context.totalSize);
@@ -255,7 +298,7 @@ export class Uploader {
   }
 
   /**
-   * Step 4: Finalize batch
+   * Step 5: Finalize batch
    */
   private async finalizeBatch(context: BatchContext): Promise<void> {
     const spinner = ora('Finalizing batch...').start();

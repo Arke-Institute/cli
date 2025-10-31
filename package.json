@@ -43,7 +43,8 @@
     "commander": "^11.1.0",
     "mime-types": "^2.1.35",
     "multiformats": "^13.4.1",
-    "ora": "^7.0.1"
+    "ora": "^7.0.1",
+    "sharp": "^0.34.4"
   },
   "devDependencies": {
     "@types/cli-progress": "^3.11.5",
