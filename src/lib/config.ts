@@ -15,7 +15,6 @@ export interface ConfigFile {
   parentPi?: string;
   parallel?: number;
   parallelParts?: number;
-  allowedExtensions?: string[];
   metadata?: Record<string, any>;
   processing?: ProcessingConfig;
 }
@@ -64,7 +63,6 @@ export async function loadConfig(cliOptions: any): Promise<ConfigFile> {
     parallelParts: (cliOptions.parallelParts && cliOptions.parallelParts !== '3')
       ? parseInt(cliOptions.parallelParts, 10)
       : (envConfig.parallelParts || fileConfig.parallelParts || parseInt(cliOptions.parallelParts || '3', 10)),
-    allowedExtensions: cliOptions.allowedExtensions || envConfig.allowedExtensions || fileConfig.allowedExtensions,
     metadata: cliOptions.metadata || envConfig.metadata || fileConfig.metadata,
     processing: processingConfig,
   };
@@ -146,10 +144,6 @@ function loadEnvConfig(): ConfigFile {
 
   if (process.env.ARKE_PARALLEL_PARTS) {
     config.parallelParts = parseInt(process.env.ARKE_PARALLEL_PARTS, 10);
-  }
-
-  if (process.env.ARKE_ALLOWED_EXTENSIONS) {
-    config.allowedExtensions = process.env.ARKE_ALLOWED_EXTENSIONS.split(',').map(ext => ext.trim());
   }
 
   if (process.env.ARKE_METADATA) {

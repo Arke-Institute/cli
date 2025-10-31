@@ -4,14 +4,6 @@
 
 import { ValidationError } from '../utils/errors.js';
 
-// Allowed file extensions per API spec
-const ALLOWED_EXTENSIONS = [
-  // Images
-  '.tiff', '.tif', '.jpg', '.jpeg', '.png', '.gif', '.bmp',
-  // Documents
-  '.json', '.xml', '.txt', '.csv', '.pdf', '.md'
-];
-
 // Size limits per API spec
 const MAX_FILE_SIZE = 5 * 1024 * 1024 * 1024; // 5 GB
 const MAX_BATCH_SIZE = 100 * 1024 * 1024 * 1024; // 100 GB
@@ -19,24 +11,12 @@ const MAX_BATCH_SIZE = 100 * 1024 * 1024 * 1024; // 100 GB
 // Invalid path characters
 const INVALID_PATH_CHARS = /[<>:"|?*\x00-\x1f]/;
 
-// Supported image content types for .image-ref.json files
-const SUPPORTED_IMAGE_REF_CONTENT_TYPES = [
+// Image MIME types that will be processed by OCR
+const OCR_PROCESSABLE_TYPES = [
   'image/jpeg',
   'image/png',
   'image/webp',
 ];
-
-/**
- * Validate a file extension
- */
-export function validateFileExtension(
-  fileName: string,
-  allowedExtensions?: string[]
-): boolean {
-  const ext = getFileExtension(fileName);
-  const allowed = allowedExtensions || ALLOWED_EXTENSIONS;
-  return allowed.includes(ext.toLowerCase());
-}
 
 /**
  * Get file extension (including the dot)
@@ -166,20 +146,20 @@ export function validateMetadata(metadata: string): Record<string, any> {
 }
 
 /**
- * Validate .image-ref.json file content
+ * Validate .ref.json file content
  *
  * Required fields:
- * - url: Publicly accessible HTTP(S) URL to the image
+ * - url: Publicly accessible HTTP(S) URL to the referenced resource
  *
- * Optional fields (validated if present):
- * - content_type: MIME type (must be one of the supported types if provided)
- * - size_bytes: File size in bytes (must be positive number if provided)
- * - original_name: Original filename for display
+ * Optional fields:
+ * - type: MIME type (e.g., 'image/jpeg', 'application/pdf')
+ * - size: File size in bytes
+ * - filename: Original filename for display
+ * - ocr: Pre-existing OCR text (if already processed)
  *
- * Note: Additional fields (e.g., ocr, description, tags) are allowed and will be
- * passed through to the worker without validation.
+ * Note: All other fields are allowed and will be passed through to the worker.
  */
-export function validateImageRefJson(content: string, fileName: string): void {
+export function validateRefJson(content: string, fileName: string, logger?: any): void {
   let parsed: any;
 
   // Parse JSON
@@ -188,7 +168,7 @@ export function validateImageRefJson(content: string, fileName: string): void {
   } catch (error: any) {
     throw new ValidationError(
       `Invalid JSON in ${fileName}: ${error.message}`,
-      'imageRef'
+      'ref'
     );
   }
 
@@ -196,7 +176,7 @@ export function validateImageRefJson(content: string, fileName: string): void {
   if (typeof parsed !== 'object' || Array.isArray(parsed) || parsed === null) {
     throw new ValidationError(
       `${fileName} must contain a JSON object`,
-      'imageRef'
+      'ref'
     );
   }
 
@@ -204,7 +184,7 @@ export function validateImageRefJson(content: string, fileName: string): void {
   if (!parsed.url || typeof parsed.url !== 'string') {
     throw new ValidationError(
       `${fileName} must contain a 'url' field with a string value`,
-      'imageRef'
+      'ref'
     );
   }
 
@@ -217,44 +197,33 @@ export function validateImageRefJson(content: string, fileName: string): void {
   } catch (error: any) {
     throw new ValidationError(
       `Invalid URL in ${fileName}: ${error.message}`,
-      'imageRef'
+      'ref'
     );
   }
 
-  // Optional field: content_type
-  if (parsed.content_type !== undefined) {
-    if (typeof parsed.content_type !== 'string') {
-      throw new ValidationError(
-        `${fileName}: content_type must be a string`,
-        'imageRef'
-      );
-    }
-
-    if (!SUPPORTED_IMAGE_REF_CONTENT_TYPES.includes(parsed.content_type)) {
-      throw new ValidationError(
-        `${fileName}: content_type '${parsed.content_type}' is not supported. Supported types: ${SUPPORTED_IMAGE_REF_CONTENT_TYPES.join(', ')}`,
-        'imageRef'
-      );
+  // Warn if type field is missing
+  if (!parsed.type) {
+    if (logger) {
+      logger.warn(`${fileName}: Missing 'type' field (optional but recommended)`);
     }
   }
 
-  // Optional field: size_bytes
-  if (parsed.size_bytes !== undefined) {
-    if (typeof parsed.size_bytes !== 'number' || parsed.size_bytes <= 0) {
-      throw new ValidationError(
-        `${fileName}: size_bytes must be a positive number`,
-        'imageRef'
-      );
-    }
-  }
+  // Warn if type is OCR-processable but extension not in filename
+  if (parsed.type && OCR_PROCESSABLE_TYPES.includes(parsed.type)) {
+    const typeToExt: { [key: string]: string } = {
+      'image/jpeg': '.jpg',
+      'image/png': '.png',
+      'image/webp': '.webp',
+    };
 
-  // Optional field: original_name
-  if (parsed.original_name !== undefined) {
-    if (typeof parsed.original_name !== 'string') {
-      throw new ValidationError(
-        `${fileName}: original_name must be a string`,
-        'imageRef'
-      );
+    const expectedExt = typeToExt[parsed.type];
+    if (expectedExt && !fileName.includes(`${expectedExt}.ref.json`)) {
+      if (logger) {
+        logger.warn(
+          `${fileName}: Type is '${parsed.type}' but filename doesn't include '${expectedExt}.ref.json' pattern. ` +
+          `This file may not be processed by OCR. Consider renaming to include the extension (e.g., 'photo${expectedExt}.ref.json').`
+        );
+      }
     }
   }
 }

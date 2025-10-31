@@ -8,12 +8,11 @@ import mime from 'mime-types';
 import type { FileInfo, ScanResult } from '../types/file.js';
 import { ScanError } from '../utils/errors.js';
 import {
-  validateFileExtension,
   validateFileSize,
   validateBatchSize,
   validateLogicalPath,
   normalizePath,
-  validateImageRefJson,
+  validateRefJson,
 } from './validation.js';
 import { getLogger } from '../utils/logger.js';
 import { computeFileCID } from '../utils/hash.js';
@@ -22,9 +21,6 @@ import { ProcessingConfig, DEFAULT_PROCESSING_CONFIG } from '../types/processing
 export interface ScanOptions {
   /** Logical root path for the batch (e.g., /series_1/box_7) */
   rootPath: string;
-
-  /** Filter files by these extensions */
-  allowedExtensions?: string[];
 
   /** Follow symbolic links */
   followSymlinks?: boolean;
@@ -153,6 +149,10 @@ export async function scanDirectory(
           await processFile(fullPath, relPath, stats.size, currentProcessingConfig);
         }
       } catch (error: any) {
+        // Re-throw ScanError for invalid ref files (should cancel batch)
+        if (error instanceof ScanError && error.message.includes('.ref.json')) {
+          throw error;
+        }
         logger.warn(`Error processing ${fullPath}: ${error.message}`);
         continue;
       }
@@ -176,23 +176,18 @@ export async function scanDirectory(
       return;
     }
 
-    // Check extension filter
-    if (!validateFileExtension(fileName, options.allowedExtensions)) {
-      logger.debug(`Skipping file with invalid extension: ${fileName}`);
-      return;
-    }
-
-    // Validate .image-ref.json files
-    if (fileName.endsWith('.image-ref.json')) {
+    // Validate .ref.json files
+    if (fileName.endsWith('.ref.json')) {
       try {
         const content = await fs.readFile(fullPath, 'utf-8');
-        validateImageRefJson(content, fileName);
-        logger.debug(`Validated .image-ref.json file: ${fileName}`);
+        validateRefJson(content, fileName, logger);
+        logger.debug(`Validated .ref.json file: ${fileName}`);
       } catch (error: any) {
-        logger.warn(`Skipping invalid .image-ref.json file: ${fileName}`, {
-          error: error.message,
-        });
-        return;
+        // Invalid ref files cause batch cancellation
+        throw new ScanError(
+          `Invalid .ref.json file: ${fileName} - ${error.message}. Batch upload cancelled.`,
+          fullPath
+        );
       }
     }
 

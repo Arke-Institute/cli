@@ -68,7 +68,6 @@ export class Uploader {
     try {
       const scanResult = await scanDirectory(this.config.directory, {
         rootPath: this.config.rootPath,
-        allowedExtensions: this.config.allowedExtensions,
         defaultProcessingConfig: this.config.processing,
       });
 

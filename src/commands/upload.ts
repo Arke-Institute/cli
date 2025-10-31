@@ -32,10 +32,6 @@ export function createUploadCommand(): Command {
     .option('--metadata <json>', 'Batch metadata as JSON string')
     .option('--parallel <n>', 'Concurrent file uploads', '5')
     .option('--parallel-parts <n>', 'Concurrent parts per multipart upload', '3')
-    .option(
-      '--allowed-extensions <ext...>',
-      'Allowed file extensions (e.g., .tiff .jpg)'
-    )
     .option('--dry-run', 'Scan files but do not upload', false)
     .option('--resume', 'Resume interrupted upload', false)
     .option('--debug', 'Enable debug logging', false)
@@ -109,14 +105,6 @@ async function handleUpload(directory: string, options: any): Promise<void> {
     throw error;
   }
 
-  // Parse allowed extensions if provided
-  let allowedExtensions: string[] | undefined = config.allowedExtensions;
-  if (options.allowedExtensions) {
-    allowedExtensions = options.allowedExtensions.map((ext: string) =>
-      ext.startsWith('.') ? ext.toLowerCase() : `.${ext.toLowerCase()}`
-    );
-  }
-
   // Build final upload config
   const uploadConfig: UploadConfig = {
     workerUrl: config.workerUrl!,
@@ -127,7 +115,6 @@ async function handleUpload(directory: string, options: any): Promise<void> {
     metadata,
     parallelUploads,
     parallelParts,
-    allowedExtensions,
     processing: config.processing,
     debug: options.debug,
     dryRun: options.dryRun,
@@ -143,9 +130,6 @@ async function handleUpload(directory: string, options: any): Promise<void> {
   console.log(chalk.gray(`Parent PI: ${uploadConfig.parentPi}`));
   console.log(chalk.gray(`Uploader: ${uploadConfig.uploader}`));
   console.log(chalk.gray(`Parallel Uploads: ${uploadConfig.parallelUploads}`));
-  if (uploadConfig.allowedExtensions) {
-    console.log(chalk.gray(`Allowed Extensions: ${uploadConfig.allowedExtensions.join(', ')}`));
-  }
   if (uploadConfig.metadata) {
     console.log(chalk.gray(`Metadata: ${JSON.stringify(uploadConfig.metadata)}`));
   }

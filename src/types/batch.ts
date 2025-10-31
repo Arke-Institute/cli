@@ -65,9 +65,6 @@ export interface UploadConfig {
   /** Number of concurrent parts per multipart upload */
   parallelParts: number;
 
-  /** Allowed file extensions (e.g., ['.tiff', '.jpg']) */
-  allowedExtensions?: string[];
-
   /** Default processing configuration */
   processing?: ProcessingConfig;
 
